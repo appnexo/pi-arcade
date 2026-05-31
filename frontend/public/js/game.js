@@ -51,20 +51,30 @@ const Game = (() => {
           paymentId = pId;
           await API.log({ msg: 'onReadyForServerApproval', paymentId: pId });
           try {
-            await API.verifyPayment({ pi_user_id: _userId, payment_id: pId });
-            await _executeSpin('pi', pId);
+            await API.approvePayment({ pi_user_id: _userId, payment_id: pId });
           } catch (err) {
-            await API.log({ msg: 'verifyPayment ERROR', error: err.message });
+            await API.log({ msg: 'approvePayment ERROR', error: err.message });
             UI.showToast('❌ Payment error: ' + err.message);
             UI.setSpinning(false);
             _spinning = false;
           }
         },
-        onReadyForServerCompletion: async (pId) => {
-          await API.log({ msg: 'onReadyForServerCompletion', paymentId: pId });
-          await API.completePayment({ payment_id: pId }).catch(() => {});
+        onReadyForServerCompletion: async (pId, txid) => {
+          await API.log({ msg: 'onReadyForServerCompletion', paymentId: pId, txid });
+          try {
+            await API.completePayment({ pi_user_id: _userId, payment_id: pId, txid });
+            await _executeSpin('pi', pId);
+          } catch (err) {
+            await API.log({ msg: 'completePayment ERROR', error: err.message });
+            UI.showToast('Payment completion error: ' + err.message);
+            UI.setSpinning(false);
+            _spinning = false;
+          }
         },
-        onCancel: () => {
+        onCancel: async (pId) => {
+          if (pId || paymentId) {
+            await API.cancelPayment({ payment_id: pId || paymentId }).catch(() => {});
+          }
           UI.showToast('❌ Payment cancelled.');
           UI.setSpinning(false);
           _spinning = false;

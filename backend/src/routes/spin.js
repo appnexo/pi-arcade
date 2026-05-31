@@ -22,10 +22,47 @@ router.post('/spin', async (req, res) => {
     try {
       await client.query('BEGIN');
 
+      if (paid_with === 'pi') {
+        if (!payment_id) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ error: 'Missing payment_id.' });
+        }
+
+        const paymentRecord = await client.query(`
+          SELECT status, consumed_at
+          FROM payment_records
+          WHERE payment_id = $1 AND user_id = $2
+          FOR UPDATE
+        `, [payment_id, pi_user_id]);
+
+        if (!paymentRecord.rows[0]) {
+          await client.query('ROLLBACK');
+          return res.status(402).json({ error: 'Payment was not approved by this app.' });
+        }
+
+        if (paymentRecord.rows[0].status !== 'completed') {
+          await client.query('ROLLBACK');
+          return res.status(402).json({ error: 'Payment is not completed yet.' });
+        }
+
+        if (paymentRecord.rows[0].consumed_at) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ error: 'Payment already used.' });
+        }
+      }
+
       await client.query(`
         INSERT INTO spins (user_id, cost, paid_with, symbols, result, payout, payment_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
       `, [pi_user_id, cost, paid_with, JSON.stringify(reels.map(r => r.id)), result, payout, payment_id || null]);
+
+      if (paid_with === 'pi') {
+        await client.query(`
+          UPDATE payment_records
+          SET consumed_at = NOW(), updated_at = NOW()
+          WHERE payment_id = $1
+        `, [payment_id]);
+      }
 
       // Update user balance
       await client.query(`
@@ -52,6 +89,7 @@ router.post('/spin', async (req, res) => {
       await client.query('COMMIT');
     } catch(err) {
       await client.query('ROLLBACK');
+      if (err.code === '23505') return res.status(409).json({ error: 'Payment already used.' });
       throw err;
     } finally {
       client.release();

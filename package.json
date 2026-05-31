@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "Pi Network Slots & Arcade",
   "main": "backend/src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "start": "node backend/src/db/setup.js && node backend/src/db/seed.js && node backend/src/server.js",
+    "start": "node backend/src/db/setup.js && node backend/src/server.js",
     "dev": "nodemon backend/src/server.js",
-    "db:setup": "node backend/src/db/setup.js",
-    "db:seed": "node backend/src/db/seed.js"
+    "db:setup": "node backend/src/db/setup.js"
   },
   "dependencies": {
     "express": "^4.18.2",

@@ -10,18 +10,30 @@ const headers = () => ({
   'Content-Type': 'application/json',
 });
 
+async function verifyUser(accessToken) {
+  const res = await axios.get(`${PI_API_BASE}/v2/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return res.data;
+}
+
 async function verifyPayment(paymentId) {
   const res = await axios.get(`${PI_API_BASE}/v2/payments/${paymentId}`, { headers: headers() });
   return res.data;
 }
 
-async function completePayment(paymentId) {
+async function approvePayment(paymentId) {
+  const res = await axios.post(`${PI_API_BASE}/v2/payments/${paymentId}/approve`, {}, { headers: headers() });
+  return res.data;
+}
+
+async function completePayment(paymentId, txid) {
   try {
-    const res = await axios.post(`${PI_API_BASE}/v2/payments/${paymentId}/complete`, {}, { headers: headers() });
+    const res = await axios.post(`${PI_API_BASE}/v2/payments/${paymentId}/complete`, { txid }, { headers: headers() });
     return res.data;
   } catch(err) {
     console.log('completePayment error (non-fatal):', err.response?.data?.message || err.message);
-    return null;
+    throw err;
   }
 }
 
@@ -38,4 +50,11 @@ function isSandbox() {
   return process.env.PI_SANDBOX === 'true';
 }
 
-module.exports = { verifyPayment, completePayment, createAppToUserPayment, isSandbox };
+module.exports = {
+  verifyUser,
+  verifyPayment,
+  approvePayment,
+  completePayment,
+  createAppToUserPayment,
+  isSandbox,
+};

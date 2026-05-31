@@ -56,10 +56,17 @@ async function boot() {
     try {
       const auth = await window.Pi.authenticate(
         ['username', 'payments'],
-        (payment) => { _log({ msg: 'incomplete payment', payment }); }
+        async (payment) => {
+          await _log({ msg: 'incomplete payment', payment });
+          await API.incompletePayment({ payment }).catch((err) => (
+            _log({ msg: 'incomplete payment ERROR', error: err.message })
+          ));
+        }
       );
       await _log({ msg: 'auth success', uid: auth.user.uid });
-      user = { pi_user_id: auth.user.uid, username: auth.user.username };
+      const session = await API.session({ authResult: auth });
+      await _log({ msg: 'session loaded', balance: session.user.balance });
+      user = session.user;
     } catch (authErr) {
       await _log({ msg: 'auth FAILED', error: authErr.message });
       hideLoading();
@@ -72,11 +79,7 @@ async function boot() {
       return;
     }
 
-    // Load session
-    const session = await API.session(user);
-    await _log({ msg: 'session loaded', balance: session.user.balance });
-
-    UI.updateUser(session.user);
+    UI.updateUser(user);
     Game.init(user.pi_user_id);
 
     // Update spin cost display

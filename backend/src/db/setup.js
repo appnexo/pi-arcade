@@ -44,6 +44,21 @@ async function setup() {
     `);
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS payment_records (
+        payment_id   TEXT PRIMARY KEY,
+        user_id      TEXT NOT NULL REFERENCES users(pi_user_id),
+        amount       NUMERIC(12,4) NOT NULL,
+        memo         TEXT,
+        txid         TEXT,
+        status       TEXT NOT NULL DEFAULT 'approved'
+          CHECK (status IN ('approved','completed','cancelled','failed')),
+        consumed_at  TIMESTAMPTZ,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS house (
         id           SERIAL PRIMARY KEY,
         date         DATE NOT NULL UNIQUE DEFAULT CURRENT_DATE,
@@ -56,6 +71,10 @@ async function setup() {
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_spins_user ON spins(user_id);
       CREATE INDEX IF NOT EXISTS idx_spins_date ON spins(created_at);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_spins_payment_unique
+        ON spins(payment_id)
+        WHERE payment_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_payment_records_user ON payment_records(user_id);
     `);
 
     await client.query('COMMIT');

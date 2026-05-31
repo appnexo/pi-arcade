@@ -13,8 +13,10 @@ const API = (() => {
   return {
     session:         (p) => request('POST', '/session', p),
     spin:            (p) => request('POST', '/spin', p),
-    verifyPayment:   (p) => request('POST', '/payment/verify', p),
+    approvePayment:  (p) => request('POST', '/payment/approve', p),
     completePayment: (p) => request('POST', '/payment/complete', p),
+    cancelPayment:   (p) => request('POST', '/payment/cancelled', p),
+    incompletePayment: (p) => request('POST', '/payment/incomplete', p),
     withdraw:        (p) => request('POST', '/withdraw', p),
     config:          ()  => request('GET',  '/config'),
     log:             (p) => request('POST', '/log', p).catch(() => {}),
