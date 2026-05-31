@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0a0a1a"/>
+  <title>π Arcade</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- Header -->
+    <header>
+      <div class="header-left">
+        <div class="logo">🎰 π ARCADE</div>
+        <div class="tagline">Pi Network Slots</div>
+      </div>
+      <div class="header-right">
+        <div class="user-info">
+          <span class="username" id="username">--</span>
+          <span class="balance-label">Balance</span>
+          <span class="balance" id="balance">0.0000 π</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Slot Machine -->
+    <div class="slot-machine">
+
+      <!-- Jackpot display -->
+      <div class="jackpot-banner">
+        <span class="jackpot-label">🔥 JACKPOT</span>
+        <span class="jackpot-value" id="jackpotVal">20x</span>
+        <span class="jackpot-label">3x 🔥</span>
+      </div>
+
+      <!-- Reels -->
+      <div class="reels-wrap">
+        <div class="reel-container">
+          <div class="reel" id="reel0">π</div>
+        </div>
+        <div class="reel-container">
+          <div class="reel" id="reel1">π</div>
+        </div>
+        <div class="reel-container">
+          <div class="reel" id="reel2">π</div>
+        </div>
+      </div>
+
+      <!-- Result message -->
+      <div class="result-msg" id="resultMsg"></div>
+
+      <!-- Payout table -->
+      <div class="payout-table">
+        <div class="payout-row">
+          <span>🔥🔥🔥</span><span class="payout-x jackpot-color">20x JACKPOT</span>
+        </div>
+        <div class="payout-row">
+          <span>💎💎💎</span><span class="payout-x big-color">10x</span>
+        </div>
+        <div class="payout-row">
+          <span>🌕🌕🌕</span><span class="payout-x medium-color">5x</span>
+        </div>
+        <div class="payout-row">
+          <span>3x igual</span><span class="payout-x small-color">2x</span>
+        </div>
+        <div class="payout-row">
+          <span>🔥💎 mix</span><span class="payout-x small-color">2x</span>
+        </div>
+      </div>
+
+      <!-- Spin controls -->
+      <div class="spin-controls">
+        <div class="cost-display">
+          <span class="cost-label">Cost per spin</span>
+          <span class="cost-value" id="spinCost">0.1 π</span>
+        </div>
+
+        <button class="btn-spin" id="btnSpin" onclick="Game.spin('pi')">
+          <span class="spin-icon">🎰</span>
+          <span>SPIN — 0.1 π</span>
+        </button>
+
+        <button class="btn-ads" id="btnAds" onclick="Game.spinAds()">
+          <span>📺 Watch Ad — Free Spin</span>
+        </button>
+      </div>
+
+      <!-- Withdraw button -->
+      <button class="btn-withdraw" onclick="UI.showModal('withdrawModal')">
+        💸 Withdraw my Pi
+      </button>
+
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <span class="stat-num" id="totalSpins">0</span>
+        <span class="stat-lbl">Spins</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="totalWon">0 π</span>
+        <span class="stat-lbl">Won</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- WITHDRAW MODAL -->
+  <div class="modal-overlay" id="withdrawModal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title">💸 Withdraw Pi
+        <button class="modal-close" onclick="UI.hideModal('withdrawModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="withdraw-balance">Available: <strong id="withdrawAvail">0 π</strong></div>
+        <input type="number" id="withdrawAmt" placeholder="Amount (min 0.5 π)" step="0.1" min="0.5"
+          style="width:100%; padding:10px; border-radius:8px; border:0.5px solid #2a2a45; background:#0f0f1e; color:#d4c8f8; font-size:14px; margin:12px 0;"/>
+        <p class="modal-note">Minimum withdrawal: 0.5 π. Funds will be sent to your Pi Wallet.</p>
+        <button class="btn-confirm-full" onclick="Game.withdraw()">Confirm Withdrawal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pi Browser required -->
+  <div id="piRequired" style="display:none; position:fixed; inset:0; background:#0a0a1a; z-index:999; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:32px;">
+    <div style="font-size:48px; margin-bottom:16px;">🎰</div>
+    <div style="font-size:22px; font-weight:700; color:#e8c97a; margin-bottom:12px;">π ARCADE</div>
+    <div style="font-size:13px; color:#9b8ec4; line-height:1.7; max-width:280px; margin-bottom:24px;">
+      This app only works inside <strong style="color:#d4c8f8;">Pi Browser</strong>.<br><br>
+      Open Pi Browser and visit <strong style="color:#d4c8f8;">arcade.appsnexo.online</strong>
+    </div>
+    <div style="font-size:10px; color:#4a4a6a;">Independent community project · Not affiliated with Pi Network</div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingOverlay" style="position:fixed; inset:0; background:#0a0a1a; z-index:998; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px;">
+    <div style="font-size:36px; color:#e8c97a; letter-spacing:4px;">🎰 π</div>
+    <div style="font-size:12px; color:#9b8ec4;">Loading Pi Arcade...</div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/game.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
