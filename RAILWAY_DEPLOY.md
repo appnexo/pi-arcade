@@ -32,7 +32,13 @@ Railway uses:
 npm start
 ```
 
-That command runs database setup and then starts the server.
+Railway runs database setup before deployment with:
+
+```bash
+npm run railway:setup
+```
+
+Then `npm start` starts only the web server, so the health check can respond quickly.
 
 ## 4. Health check
 
